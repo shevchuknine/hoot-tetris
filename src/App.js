@@ -1,7 +1,16 @@
 import React, {useState, useEffect, useReducer} from 'react';
-import {drawMap, figureDropped, filterFromFigure, printMap, returnInitialMap, transformEveryElement} from "./helpers";
+import {
+    calculateMapLines,
+    drawMap,
+    figureDropped,
+    filterFromFigure,
+    printMap,
+    returnInitialMap,
+    transformEveryElement
+} from "./helpers";
+import AppComponent from "./AppComponent";
 
-const FIELD_WIDTH = 5;
+const FIELD_WIDTH = 10;
 const FIELD_HEIGHT = 10;
 
 const reducer = (state, action) => {
@@ -25,18 +34,27 @@ const reducer = (state, action) => {
 
         const isFigureDropped = figureDropped(nextFigure, state.map, FIELD_HEIGHT);
 
-        return {
-            ...state,
-            figure: isFigureDropped ? [{x: 0, y: 2}] : nextFigure,
-            map: isFigureDropped ? state.map.concat(nextFigure) : state.map
-        };
+        if (isFigureDropped) {
+            const nextData = calculateMapLines(state.map.concat(nextFigure), FIELD_WIDTH);
+            return {
+                ...state,
+                figure: [{x: 0, y: 2}],
+                map: nextData.map,
+                count: state.count + nextData.count
+            };
+        } else {
+            return {
+                ...state,
+                figure: nextFigure
+            };
+        }
     }
 };
 const changeX = () => ({type: "changeX"});
 const changeY = (payload) => ({type: "changeY", payload});
 
 const App = () => {
-    const [state, dispatch] = useReducer(reducer, {figure: [{x: 0, y: 2}], map: []});
+    const [state, dispatch] = useReducer(reducer, {figure: [{x: 0, y: 2}], map: [], count: 0});
 
     useEffect(() => {
         setInterval(() => {
@@ -56,9 +74,8 @@ const App = () => {
         });
     }, []);
 
-    console.log(drawMap(state.map, state.figure, FIELD_HEIGHT, FIELD_WIDTH));
-
-    return null;
+    const {map, figure} = state;
+    return <AppComponent map={drawMap(map, figure, FIELD_HEIGHT, FIELD_WIDTH)}/>;
 };
 
 export default App;

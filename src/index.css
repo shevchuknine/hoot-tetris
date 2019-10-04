@@ -12,4 +12,4 @@ code {
     monospace;
 }
 
-@import "test/styles.css";
+@import "./app.css";

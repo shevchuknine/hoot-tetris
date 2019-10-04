@@ -1,5 +1,5 @@
-export const returnInitialMap = (height, width) => {
-    return new Array(height).fill(0).map(item => new Array(width).fill(0));
+export const returnInitialMap = (height, width, initialValue = "white") => {
+    return new Array(height).fill(initialValue).map(item => new Array(width).fill(initialValue));
 };
 
 export const transformEveryElement = (array, callback) => {
@@ -13,17 +13,39 @@ export const figureDropped = (figure, map, fieldHeight) => {
     }, false);
 };
 
+export const calculateMapLines = (map, mapWidth) => {
+    const mapObject = map.reduce((res, item) => {
+        return {
+            ...res,
+            [item.x]: (res[item.x] || []).concat(item)
+        };
+    }, {});
+
+    const keysToCount = Object.entries(mapObject).reduce((res, [key, value]) => {
+        if (value.length === mapWidth) {
+            return res.concat(+key);
+        } else {
+            return res;
+        }
+    }, []);
+
+    return {
+        map: map.filter(item => !keysToCount.includes(item.x))
+            .map(item => ({...item, x: item.x + keysToCount.filter(el => item.x < el).length})),
+        count: keysToCount.length
+    }
+};
+
 export const drawMap = (map, figure, height, width) => {
-    console.clear();
     let result = returnInitialMap(height, width);
 
     map.forEach(item => {
-        result[item.x][item.y] = 1;
+        result[item.x][item.y] = "red";
     });
 
     figure.forEach(item => {
-        result[item.x][item.y] = 2;
+        result[item.x][item.y] = "blue";
     });
 
-    return result.map(item => item.reduce((res, i) => `${res} ${i}`, "")).join("\n")
+    return result;
 };
