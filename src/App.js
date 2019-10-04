@@ -1,71 +1,62 @@
-import React, {useState, useEffect} from 'react';
-import {filterFromFigure, printMap, returnInitialMap} from "./helpers";
+import React, {useState, useEffect, useReducer} from 'react';
+import {drawMap, figureDropped, filterFromFigure, printMap, returnInitialMap, transformEveryElement} from "./helpers";
 
 const FIELD_WIDTH = 5;
+const FIELD_HEIGHT = 10;
 
-const initialMap = returnInitialMap(),
-    figure = [[0, 0, 0, 2, 2, 0, 0, 0], [0, 0, 0, 0, 2, 0, 0, 0]];
+const reducer = (state, action) => {
+    if (action.type === "changeX" || action.type === "changeY") {
+        let nextFigure;
+
+        if (action.type === "changeX") {
+            nextFigure = transformEveryElement(state.figure, (item) => ({...item, x: item.x + 1}));
+        } else if (action.type === "changeY") {
+            const isMovementAllowed = state.figure.reduce((res, item) => {
+                const nextY = item.y + action.payload;
+                return res && (nextY >= 0) && (nextY < FIELD_WIDTH) && (state.map.find(mapI => mapI.x === item.x && mapI.y === nextY) === undefined);
+            }, true);
+
+            if (isMovementAllowed) {
+                nextFigure = transformEveryElement(state.figure, (item) => ({...item, y: item.y + action.payload}));
+            } else {
+                return {...state};
+            }
+        }
+
+        const isFigureDropped = figureDropped(nextFigure, state.map, FIELD_HEIGHT);
+
+        return {
+            ...state,
+            figure: isFigureDropped ? [{x: 0, y: 2}] : nextFigure,
+            map: isFigureDropped ? state.map.concat(nextFigure) : state.map
+        };
+    }
+};
+const changeX = () => ({type: "changeX"});
+const changeY = (payload) => ({type: "changeY", payload});
 
 const App = () => {
-    const [map, setMap] = useState(initialMap);
-    const [top, setTop] = useState(0);
-    const [left, setLeft] = useState(Math.floor(FIELD_WIDTH / 2));
-
-    useEffect(_ => {
-        const timeoutId = setTimeout(() => {
-            // получаем состояние карты на след. шаге
-            const nextMapState =
-                filterFromFigure(map.slice(0, top))
-                    .concat(figure.map(line => line.slice(left, left + FIELD_WIDTH))) // конкатить нужно этот регион с мерже с фигурой через mergeWith
-                    .concat(map.slice(top + figure.length, map.length));
-
-            // проверяем пересечения
-            let hasConflicts = false;
-            nextMapState.forEach((row, rowIndex) => {
-                row.forEach((item, itemIndex) => {
-                    hasConflicts = hasConflicts || (item === 2 && map[rowIndex][itemIndex] === 1);
-                });
-            });
-
-            // обновляем карту
-            const isEndOfField = top + figure.length === 10;
-            if (hasConflicts) {
-                setMap(filterFromFigure(map, 1));
-                setTop(0);
-            } else if (isEndOfField) {
-                setMap(filterFromFigure(nextMapState, 1));
-                setTop(0);
-            } else {
-                setMap(nextMapState);
-                setTop(top + 1);
-            }
-        }, 1000);
-
-        return () => clearTimeout(timeoutId);
-    });
+    const [state, dispatch] = useReducer(reducer, {figure: [{x: 0, y: 2}], map: []});
 
     useEffect(() => {
-        const handler = ({key}) => {
+        setInterval(() => {
+            dispatch(changeX());
+        }, 1000);
+    }, []);
+
+    useEffect(() => {
+        window.addEventListener("keydown", ({key}) => {
             if (key === "ArrowLeft") {
-                const nextLeft = left - 1;
-                setLeft(nextLeft >= 0 ? nextLeft : 0);
-                // setMap(map);
+                dispatch(changeY(-1));
             } else if (key === "ArrowRight") {
-                const nextLeft = left + 1,
-                    rightBorder = Math.floor(FIELD_WIDTH / 2);
-
-                setLeft(nextLeft <= rightBorder ? nextLeft : rightBorder);
-                // setMap(map);
+                dispatch(changeY(1));
+            } else if (key === "ArrowDown") {
+                dispatch(changeX());
             }
-        };
+        });
+    }, []);
 
-        window.addEventListener("keydown", handler);
-
-        return () => window.removeEventListener("keydown", handler)
-    });
-
-    // console.count("render");
-    console.log(printMap(map));
+    console.log(drawMap(state.map, state.figure, FIELD_HEIGHT, FIELD_WIDTH));
 
     return null;
 };
