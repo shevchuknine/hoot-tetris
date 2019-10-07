@@ -49,3 +49,17 @@ export const drawMap = (map, figure, height, width) => {
 
     return result;
 };
+
+export const rotateFigure = (figure) => {
+    const {x: rotationX, y: rotationY} = figure[figure.length - 1],
+    cos = Math.cos(-Math.PI/2),
+    sin = Math.sin(-Math.PI/2);
+
+    figure.map(point => {
+        return {
+            ...point,
+            x: cos * (point.x - rotationX) - sin * (point.y - rotationY) + rotationX,
+            y: sin * (point.x - rotationX) + cos * (point.y - rotationY) + rotationY
+        };
+    });
+};

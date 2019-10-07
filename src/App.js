@@ -5,13 +5,16 @@ import {
     figureDropped,
     filterFromFigure,
     printMap,
-    returnInitialMap,
+    returnInitialMap, rotateFigure,
     transformEveryElement
 } from "./helpers";
 import AppComponent from "./AppComponent";
 
 const FIELD_WIDTH = 10;
 const FIELD_HEIGHT = 10;
+
+
+const initialFigure = [{x: 0, y: 3}, {x:0, y:4}, {x:0, y:5}, {x:1, y:4}];
 
 const reducer = (state, action) => {
     if (action.type === "changeX" || action.type === "changeY") {
@@ -38,7 +41,7 @@ const reducer = (state, action) => {
             const nextData = calculateMapLines(state.map.concat(nextFigure), FIELD_WIDTH);
             return {
                 ...state,
-                figure: [{x: 0, y: 2}],
+                figure: initialFigure,
                 map: nextData.map,
                 count: state.count + nextData.count
             };
@@ -48,13 +51,19 @@ const reducer = (state, action) => {
                 figure: nextFigure
             };
         }
+    } else if (action.type === "rotate") {
+        return {
+            ...state,
+            figure: rotateFigure(state.figure)
+        };
     }
 };
 const changeX = () => ({type: "changeX"});
 const changeY = (payload) => ({type: "changeY", payload});
+const rotate = () => ({type: "rotate"});
 
 const App = () => {
-    const [state, dispatch] = useReducer(reducer, {figure: [{x: 0, y: 2}], map: [], count: 0});
+    const [state, dispatch] = useReducer(reducer, {figure: initialFigure, map: [], count: 0});
 
     useEffect(() => {
         setInterval(() => {
@@ -70,6 +79,8 @@ const App = () => {
                 dispatch(changeY(1));
             } else if (key === "ArrowDown") {
                 dispatch(changeX());
+            } else if (key === "ArrowUp") {
+                dispatch(rotate())
             }
         });
     }, []);
