@@ -93,8 +93,7 @@ const App = () => {
 
     const {map, figure, count} = state;
     return <AppComponent map={drawMap(map, figure, FIELD_HEIGHT, FIELD_WIDTH)}
-                         count={count}
-    />;
+                         count={count}/>;
 };
 
 export default App;

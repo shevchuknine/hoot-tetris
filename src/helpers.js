@@ -33,6 +33,7 @@ export const calculateMapLines = (map, mapWidth) => {
 };
 
 export const drawMap = (map, figure, height, width) => {
+    // todo: refactor
     let result = returnInitialMap(height, width);
 
     map.forEach(item => {
@@ -53,7 +54,6 @@ export const drawMap = (map, figure, height, width) => {
 };
 
 export const hasConflicts = (figure, map) => {
-    console.log(map);
     return figure.reduce((res, item) => {
         return res || map.find(el => el.x === item.x && el.y === item.y) !== undefined
     }, false);
@@ -90,10 +90,13 @@ export const rotateFigure = (figure, map, mapWidth) => {
 
 const randomInteger = (min, max) => {
     return Math.floor(min + Math.random() * (max + 1 - min));
-}
+};
 
 export const generateFigure = (width) => {
     const half = Math.floor(width / 2);
+    /*
+    * при генерации присваивать цвет каждой фигуры (рандомайзер) и id (нужен для рисования контуров фигур)
+    * */
     const figures = [
         [{x: -2, y: half - 1}, {x: -2, y: half}, {x: -2, y: half + 1}, {x: -1, y: half}],
         [{x: -1, y: half - 2}, {x: -1, y: half - 1}, {x: -1, y: half + 1}, {x: -1, y: half}],
