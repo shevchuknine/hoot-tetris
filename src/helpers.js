@@ -2,10 +2,6 @@ export const returnInitialMap = (height, width, initialValue = "white") => {
     return new Array(height).fill(initialValue).map(item => new Array(width).fill(initialValue));
 };
 
-export const transformEveryElement = (array, callback) => {
-    return array.map(callback);
-};
-
 export const figureDropped = (figure, map, fieldHeight) => {
     return figure.reduce((res, item) => {
         const nextItemX = item.x + 1;
@@ -40,26 +36,77 @@ export const drawMap = (map, figure, height, width) => {
     let result = returnInitialMap(height, width);
 
     map.forEach(item => {
-        result[item.x][item.y] = "red";
+        const row = result[item.x];
+        if (row) {
+            row[item.y] = "red";
+        }
     });
 
     figure.forEach(item => {
-        result[item.x][item.y] = "blue";
+        const row = result[item.x];
+        if (row) {
+            row[item.y] = "blue";
+        }
     });
 
     return result;
 };
 
-export const rotateFigure = (figure) => {
-    const {x: rotationX, y: rotationY} = figure[figure.length - 1],
-    cos = Math.cos(-Math.PI/2),
-    sin = Math.sin(-Math.PI/2);
+export const hasConflicts = (figure, map) => {
+    console.log(map);
+    return figure.reduce((res, item) => {
+        return res || map.find(el => el.x === item.x && el.y === item.y) !== undefined
+    }, false);
+};
 
-    figure.map(point => {
+const hasIllegalCoords = (figure, mapWidth) => {
+    return figure.reduce((res, item) => {
+        return res || item.y < 0 || item.y >= mapWidth;
+    }, false);
+};
+
+export const rotateFigure = (figure, map, mapWidth) => {
+    const howFarMove = 5,
+        figureClone = figure.map(item => ({...item, x: item.x + howFarMove, y: item.y + howFarMove}));
+
+    const {x: rotationX, y: rotationY} = figureClone[figureClone.length - 1],
+        cos = Math.cos(-Math.PI / 2),
+        sin = Math.sin(-Math.PI / 2);
+
+    const rotatedFigure = figureClone.map(point => {
         return {
             ...point,
-            x: cos * (point.x - rotationX) - sin * (point.y - rotationY) + rotationX,
-            y: sin * (point.x - rotationX) + cos * (point.y - rotationY) + rotationY
+            x: parseInt(cos * (point.x - rotationX) - sin * (point.y - rotationY) + rotationX) - howFarMove,
+            y: parseInt(sin * (point.x - rotationX) + cos * (point.y - rotationY) + rotationY) - howFarMove
         };
     });
+
+    if (hasConflicts(rotatedFigure, map) || hasIllegalCoords(rotatedFigure, mapWidth)) {
+        return figure.map(i => ({...i}));
+    } else {
+        return rotatedFigure;
+    }
+};
+
+const randomInteger = (min, max) => {
+    return Math.floor(min + Math.random() * (max + 1 - min));
+}
+
+export const generateFigure = (width) => {
+    const half = Math.floor(width / 2);
+    const figures = [
+        [{x: -2, y: half - 1}, {x: -2, y: half}, {x: -2, y: half + 1}, {x: -1, y: half}],
+        [{x: -1, y: half - 2}, {x: -1, y: half - 1}, {x: -1, y: half + 1}, {x: -1, y: half}],
+        [{x: -2, y: half - 1}, {x: -1, y: half - 1}, {x: -1, y: half + 1}, {x: -1, y: half}],
+        [{x: -2, y: half + 1}, {x: -1, y: half - 1}, {x: -1, y: half + 1}, {x: -1, y: half}],
+        [{x: -2, y: half}, {x: -1, y: half}, {x: -2, y: half + 1}, {x: -1, y: half + 1}],
+        [{x: -1, y: half}, {x: -2, y: half + 1}, {x: -1, y: half - 1}, {x: -2, y: half}],
+        [{x: -1, y: half}, {x: -2, y: half - 1}, {x: -1, y: half + 1}, {x: -2, y: half}],
+    ];
+
+    return figures[randomInteger(0, figures.length - 1)];
+};
+
+export const isFinish = (map) => {
+    return map.find(item => item.x === 0) !== undefined;
 };

@@ -3,33 +3,29 @@ import {
     calculateMapLines,
     drawMap,
     figureDropped,
-    filterFromFigure,
-    printMap,
-    returnInitialMap, rotateFigure,
-    transformEveryElement
+    generateFigure, hasConflicts, isFinish,rotateFigure,
 } from "./helpers";
 import AppComponent from "./AppComponent";
 
-const FIELD_WIDTH = 10;
-const FIELD_HEIGHT = 10;
-
-
-const initialFigure = [{x: 0, y: 3}, {x:0, y:4}, {x:0, y:5}, {x:1, y:4}];
+const FIELD_WIDTH = 9;
+const FIELD_HEIGHT = 20;
 
 const reducer = (state, action) => {
     if (action.type === "changeX" || action.type === "changeY") {
         let nextFigure;
 
         if (action.type === "changeX") {
-            nextFigure = transformEveryElement(state.figure, (item) => ({...item, x: item.x + 1}));
+            const {figure} = state;
+            nextFigure = figure.map((item) => ({...item, x: item.x + 1}));
         } else if (action.type === "changeY") {
-            const isMovementAllowed = state.figure.reduce((res, item) => {
-                const nextY = item.y + action.payload;
-                return res && (nextY >= 0) && (nextY < FIELD_WIDTH) && (state.map.find(mapI => mapI.x === item.x && mapI.y === nextY) === undefined);
-            }, true);
+            const {figure} = state,
+                changedFigure = figure.map(i => ({...i, y: i.y + action.payload})),
+                isMovementAllowed = changedFigure.reduce((res, item) => {
+                    return res && (item.y >= 0) && (item.y < FIELD_WIDTH);
+                }, true) && !hasConflicts(changedFigure, state.map);
 
             if (isMovementAllowed) {
-                nextFigure = transformEveryElement(state.figure, (item) => ({...item, y: item.y + action.payload}));
+                nextFigure = changedFigure;
             } else {
                 return {...state};
             }
@@ -38,13 +34,23 @@ const reducer = (state, action) => {
         const isFigureDropped = figureDropped(nextFigure, state.map, FIELD_HEIGHT);
 
         if (isFigureDropped) {
-            const nextData = calculateMapLines(state.map.concat(nextFigure), FIELD_WIDTH);
-            return {
-                ...state,
-                figure: initialFigure,
-                map: nextData.map,
-                count: state.count + nextData.count
-            };
+            const {map, count} = calculateMapLines(state.map.concat(nextFigure), FIELD_WIDTH);
+
+            if (isFinish(map)) {
+                return {
+                    ...state,
+                    figure: generateFigure(FIELD_WIDTH),
+                    map: [],
+                    count: 0
+                };
+            } else {
+                return {
+                    ...state,
+                    figure: generateFigure(FIELD_WIDTH),
+                    map,
+                    count: state.count + count
+                };
+            }
         } else {
             return {
                 ...state,
@@ -54,7 +60,7 @@ const reducer = (state, action) => {
     } else if (action.type === "rotate") {
         return {
             ...state,
-            figure: rotateFigure(state.figure)
+            figure: rotateFigure(state.figure, state.map, FIELD_WIDTH)
         };
     }
 };
@@ -63,12 +69,12 @@ const changeY = (payload) => ({type: "changeY", payload});
 const rotate = () => ({type: "rotate"});
 
 const App = () => {
-    const [state, dispatch] = useReducer(reducer, {figure: initialFigure, map: [], count: 0});
+    const [state, dispatch] = useReducer(reducer, {figure: generateFigure(FIELD_WIDTH), map: [], count: 0});
 
     useEffect(() => {
         setInterval(() => {
             dispatch(changeX());
-        }, 1000);
+        }, 500);
     }, []);
 
     useEffect(() => {
@@ -85,8 +91,10 @@ const App = () => {
         });
     }, []);
 
-    const {map, figure} = state;
-    return <AppComponent map={drawMap(map, figure, FIELD_HEIGHT, FIELD_WIDTH)}/>;
+    const {map, figure, count} = state;
+    return <AppComponent map={drawMap(map, figure, FIELD_HEIGHT, FIELD_WIDTH)}
+                         count={count}
+    />;
 };
 
 export default App;

@@ -1,24 +1,27 @@
-import React from "react";
+import React, {Fragment} from "react";
 
-const AppComponent = ({map}) => {
+const AppComponent = ({map, count}) => {
     return (
-        <div className={"wrapper"}>
-            {
-                map.map((row, index) => {
-                    return (
-                        <div className={"row"} key={index}>
-                            {
-                                row.map((item, index) => {
-                                    return (
-                                        <div className={"item"} key={index} style={{backgroundColor: item}}>&nbsp;</div>
-                                    );
-                                })
-                            }
-                        </div>
-                    );
-                })
-            }
-        </div>
+        <Fragment>
+            <div className={"wrapper"}>
+                {
+                    map.map((row, index) => {
+                        return (
+                            <div className={"row"} key={index}>
+                                {
+                                    row.map((item, index) => {
+                                        return (
+                                            <div className={"item"} key={index} style={{backgroundColor: item}}>&nbsp;</div>
+                                        );
+                                    })
+                                }
+                            </div>
+                        );
+                    })
+                }
+            </div>
+            <div>count: {count}</div>
+        </Fragment>
     );
 };
 
