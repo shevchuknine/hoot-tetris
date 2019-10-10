@@ -33,17 +33,9 @@ export const calculateMapLines = (map, mapWidth) => {
 };
 
 export const drawMap = (map, figure, height, width) => {
-    // todo: refactor
     let result = returnInitialMap(height, width);
 
-    map.forEach(item => {
-        const row = result[item.x];
-        if (row) {
-            row[item.y] = item.color;
-        }
-    });
-
-    figure.forEach(item => {
+    map.concat(figure).forEach(item => {
         const row = result[item.x];
         if (row) {
             row[item.y] = item.color;
