@@ -4,8 +4,8 @@ import {
     drawMap,
     figureDropped,
     generateFigure, hasConflicts, isFinish,rotateFigure,
-} from "./helpers";
-import AppComponent from "./AppComponent";
+} from "../../utils/helpers";
+import GameComponent from "./GameComponent";
 
 const FIELD_WIDTH = 9;
 const FIELD_HEIGHT = 20;
@@ -68,7 +68,7 @@ const changeX = () => ({type: "changeX"});
 const changeY = (payload) => ({type: "changeY", payload});
 const rotate = () => ({type: "rotate"});
 
-const App = () => {
+const Game = () => {
     const [state, dispatch] = useReducer(reducer, {figure: generateFigure(FIELD_WIDTH), map: [], count: 0});
 
     useEffect(() => {
@@ -92,8 +92,8 @@ const App = () => {
     }, []);
 
     const {map, figure, count} = state;
-    return <AppComponent map={drawMap(map, figure, FIELD_HEIGHT, FIELD_WIDTH)}
-                         count={count}/>;
+    return <GameComponent map={drawMap(map, figure, FIELD_HEIGHT, FIELD_WIDTH)}
+                          count={count}/>;
 };
 
-export default App;
+export default Game;

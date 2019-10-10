@@ -1,4 +1,4 @@
-export const returnInitialMap = (height, width, initialValue = "white") => {
+export const returnInitialMap = (height, width, initialValue = "transparent") => {
     return new Array(height).fill(initialValue).map(item => new Array(width).fill(initialValue));
 };
 
@@ -39,14 +39,14 @@ export const drawMap = (map, figure, height, width) => {
     map.forEach(item => {
         const row = result[item.x];
         if (row) {
-            row[item.y] = "red";
+            row[item.y] = item.color;
         }
     });
 
     figure.forEach(item => {
         const row = result[item.x];
         if (row) {
-            row[item.y] = "blue";
+            row[item.y] = item.color;
         }
     });
 
@@ -92,22 +92,31 @@ const randomInteger = (min, max) => {
     return Math.floor(min + Math.random() * (max + 1 - min));
 };
 
+const withProp = (array, prop) => {
+    return array.map(i => ({...i, ...prop}));
+};
+
+const generateId = () => {
+    return parseInt(Math.random() * 1000000000000);
+};
+
 export const generateFigure = (width) => {
     const half = Math.floor(width / 2);
     /*
     * при генерации присваивать цвет каждой фигуры (рандомайзер) и id (нужен для рисования контуров фигур)
     * */
     const figures = [
-        [{x: -2, y: half - 1}, {x: -2, y: half}, {x: -2, y: half + 1}, {x: -1, y: half}],
-        [{x: -1, y: half - 2}, {x: -1, y: half - 1}, {x: -1, y: half + 1}, {x: -1, y: half}],
-        [{x: -2, y: half - 1}, {x: -1, y: half - 1}, {x: -1, y: half + 1}, {x: -1, y: half}],
-        [{x: -2, y: half + 1}, {x: -1, y: half - 1}, {x: -1, y: half + 1}, {x: -1, y: half}],
-        [{x: -2, y: half}, {x: -1, y: half}, {x: -2, y: half + 1}, {x: -1, y: half + 1}],
-        [{x: -1, y: half}, {x: -2, y: half + 1}, {x: -1, y: half - 1}, {x: -2, y: half}],
-        [{x: -1, y: half}, {x: -2, y: half - 1}, {x: -1, y: half + 1}, {x: -2, y: half}],
+        withProp([{x: -2, y: half - 1}, {x: -2, y: half}, {x: -2, y: half + 1}, {x: -1, y: half}], {color: "#0031ff"}),
+        withProp([{x: -1, y: half - 2}, {x: -1, y: half - 1}, {x: -1, y: half + 1}, {x: -1, y: half}], {color: "#00b6df"}),
+        withProp([{x: -2, y: half - 1}, {x: -1, y: half - 1}, {x: -1, y: half + 1}, {x: -1, y: half}], {color: "#e17b00"}),
+        withProp([{x: -2, y: half + 1}, {x: -1, y: half - 1}, {x: -1, y: half + 1}, {x: -1, y: half}], {color: "#b700ff"}),
+        withProp([{x: -2, y: half}, {x: -1, y: half}, {x: -2, y: half + 1}, {x: -1, y: half + 1}], {color: "#e4e300"}),
+        withProp([{x: -1, y: half}, {x: -2, y: half + 1}, {x: -1, y: half - 1}, {x: -2, y: half}], {color: "#00e009"}),
+        withProp([{x: -1, y: half}, {x: -2, y: half - 1}, {x: -1, y: half + 1}, {x: -2, y: half}], {color: "#e20016"})
     ];
 
-    return figures[randomInteger(0, figures.length - 1)];
+    const id = generateId();
+    return withProp(figures[randomInteger(0, figures.length - 1)], {id});
 };
 
 export const isFinish = (map) => {
