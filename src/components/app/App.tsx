@@ -1,7 +1,9 @@
 import React from "react";
 import Game from "../game/Game";
 
-const App = () => {
+interface Props {}
+
+const App: React.FunctionComponent<Props> = () => {
     return (
         <div className={"app-wrapper"}>
             <Game/>
